@@ -16,5 +16,42 @@
     "type": "int",
     "hint": "网络较慢可适当调大",
     "default": 30
+  },
+  "admin_only": {
+    "description": "仅管理员可用（开启后只有 AstrBot 框架管理员能调用 /mmquota）",
+    "type": "bool",
+    "hint": "默认关闭。开启后非管理员调用将被拒绝",
+    "default": false
+  },
+  "schedule_enable": {
+    "description": "启用定时推送限额",
+    "type": "bool",
+    "hint": "默认关闭。开启后会按下方 Cron 表达式定时把限额发送给指定的人或群",
+    "default": false
+  },
+  "schedule_cron": {
+    "description": "定时推送的 Cron 表达式（5 段：分 时 日 月 周）",
+    "type": "string",
+    "hint": "例：'0 9 * * *' 每天9点；'0 9,21 * * *' 每天9点和21点；'*/30 * * * *' 每30分钟。字段顺序：分钟(0-59) 小时(0-23) 日(1-31) 月(1-12) 星期(0-6,0=周日)",
+    "default": "0 9 * * *"
+  },
+  "schedule_platform": {
+    "description": "定时推送使用的消息平台适配器名称",
+    "type": "string",
+    "hint": "一般填 aiocqhttp（QQ）。需与你已启用的适配器一致",
+    "default": "aiocqhttp"
+  },
+  "schedule_target_type": {
+    "description": "定时推送目标类型",
+    "type": "string",
+    "hint": "private=发给某个人，group=发给某个群",
+    "options": ["private", "group"],
+    "default": "group"
+  },
+  "schedule_target_id": {
+    "description": "定时推送目标号码（纯数字）",
+    "type": "string",
+    "hint": "发给人填对方 QQ 号，发给群填群号。只填纯数字，例如 123456789",
+    "default": ""
   }
 }
