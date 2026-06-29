@@ -17,6 +17,12 @@
     "hint": "网络较慢可适当调大",
     "default": 30
   },
+  "report_title": {
+    "description": "播报标题",
+    "type": "string",
+    "hint": "显示在播报/查询结果第一行，可自定义，例如 minimax-token-plan/MiniMax-M3",
+    "default": "MiniMax 限额播报"
+  },
   "admin_only": {
     "description": "仅管理员可用（开启后只有 AstrBot 框架管理员能调用 /mmquota）",
     "type": "bool",
@@ -24,32 +30,56 @@
     "default": false
   },
   "schedule_enable": {
-    "description": "启用定时推送限额",
+    "description": "启用定时全量播报",
     "type": "bool",
-    "hint": "默认关闭。开启后会按下方 Cron 表达式定时把限额发送给指定的人或群",
+    "hint": "默认关闭。开启后按下方 Cron 表达式定时把完整限额播报发送给指定的人或群",
     "default": false
   },
   "schedule_cron": {
-    "description": "定时推送的 Cron 表达式（5 段：分 时 日 月 周）",
+    "description": "定时播报的 Cron 表达式（5 段：分 时 日 月 周）",
     "type": "string",
     "hint": "例：'0 9 * * *' 每天9点；'0 9,21 * * *' 每天9点和21点；'*/30 * * * *' 每30分钟。字段顺序：分钟(0-59) 小时(0-23) 日(1-31) 月(1-12) 星期(0-6,0=周日)",
     "default": "0 9 * * *"
   },
+  "monitor_enable": {
+    "description": "启用低额度阶梯告警（后台轮询，额度跌破阈值时自动提醒）",
+    "type": "bool",
+    "hint": "默认关闭。开启后按下方间隔轮询，余量每向下跨过一个告警档位就提醒一次，不会重复打扰",
+    "default": false
+  },
+  "monitor_interval": {
+    "description": "后台轮询间隔（分钟）",
+    "type": "int",
+    "hint": "建议 30 分钟，避免过于频繁请求接口。最小 1 分钟",
+    "default": 30
+  },
+  "alert_levels": {
+    "description": "告警档位（剩余百分比，逗号分隔，从高到低）",
+    "type": "string",
+    "hint": "例：'20,10,0' 表示余量首次≤20%提醒一次，继续跌到≤10%再提醒一次，到≤0%再提醒一次。时段重置回升后自动重新计算",
+    "default": "20,10,0"
+  },
+  "monitor_models": {
+    "description": "需要监控告警的模型（逗号分隔）",
+    "type": "string",
+    "hint": "例：'general,video'。留空表示监控接口返回的所有模型",
+    "default": "general,video"
+  },
   "schedule_platform": {
-    "description": "定时推送使用的消息平台适配器名称",
+    "description": "推送使用的消息平台适配器名称（定时播报与告警共用）",
     "type": "string",
     "hint": "一般填 aiocqhttp（QQ）。需与你已启用的适配器一致",
     "default": "aiocqhttp"
   },
   "schedule_target_type": {
-    "description": "定时推送目标类型",
+    "description": "推送目标类型（定时播报与告警共用）",
     "type": "string",
     "hint": "private=发给某个人，group=发给某个群",
     "options": ["private", "group"],
     "default": "group"
   },
   "schedule_target_id": {
-    "description": "定时推送目标号码（纯数字）",
+    "description": "推送目标号码（纯数字，定时播报与告警共用）",
     "type": "string",
     "hint": "发给人填对方 QQ 号，发给群填群号。只填纯数字，例如 123456789",
     "default": ""
