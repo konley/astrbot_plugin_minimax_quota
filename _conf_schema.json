@@ -1,0 +1,20 @@
+{
+  "api_key": {
+    "description": "MiniMax API Key（用于查询限额，请填写你的 Bearer Token）",
+    "type": "string",
+    "hint": "在 MiniMax 控制台获取，格式形如 eyJ...",
+    "default": ""
+  },
+  "api_base": {
+    "description": "MiniMax 限额查询接口地址",
+    "type": "string",
+    "hint": "一般无需修改",
+    "default": "https://www.minimaxi.com/v1/token_plan/remains"
+  },
+  "timeout": {
+    "description": "请求超时时间（秒）",
+    "type": "int",
+    "hint": "网络较慢可适当调大",
+    "default": 30
+  }
+}
