@@ -189,33 +189,58 @@ class MinimaxQuotaPlugin(Star):
     def _resolve_platform_id(self) -> str | None:
         """解析推送用的平台实例 ID。
 
-        优先用用户在 WebUI 配置的 schedule_platform 值去匹配平台实例 ID；
-        若匹配不到，则自动查找第一个已启用的 aiocqhttp 类型平台。
+        优先用用户在 WebUI 配置的 schedule_platform 值匹配平台实例 ID；
+        若匹配不到，自动查找第一个 aiocqhttp 类型平台实例。
         """
         configured = (self.config.get("schedule_platform") or "").strip()
 
-        # 尝试从 context.platform_manager 获取已注册的平台实例
         pm = getattr(self.context, "platform_manager", None)
-        platforms = getattr(pm, "platforms", None)
-        if isinstance(platforms, dict) and platforms:
-            # 精确匹配 ID
-            if configured and configured in platforms:
-                return configured
-            # 模糊匹配：配置值是类型名（如 aiocqhttp），找该类型的第一个实例
-            for pid, inst in platforms.items():
-                ptype = type(inst).__name__
-                if configured and configured.lower() == ptype.lower():
-                    return pid
-            # 未配置或未匹配到，回退：取第一个 aiocqhttp 实例
-            for pid, inst in platforms.items():
+        # AstrBot 的 platform_insts 是一个列表，每个元素有 .meta().id
+        insts = getattr(pm, "platform_insts", None)
+        if not insts:
+            # 兼容旧版本：platforms 字典
+            insts_dict = getattr(pm, "platforms", None)
+            if isinstance(insts_dict, dict) and insts_dict:
+                if configured and configured in insts_dict:
+                    return configured
+                return next(iter(insts_dict.keys()), None)
+            return configured or None
+
+        # 精确匹配实例 ID
+        if configured:
+            for inst in insts:
+                try:
+                    if inst.meta().id == configured:
+                        return configured
+                except Exception:
+                    pass
+
+        # 模糊匹配：配置值是类型名（如 aiocqhttp），匹配 platform 类型
+        if configured:
+            for inst in insts:
+                try:
+                    ptype = type(inst).__name__
+                    if configured.lower() in ptype.lower():
+                        return inst.meta().id
+                except Exception:
+                    pass
+
+        # 回退：取第一个 aiocqhttp 类型的实例
+        for inst in insts:
+            try:
                 ptype = type(inst).__name__
                 if "aiocqhttp" in ptype.lower():
-                    return pid
-            # 再回退：取第一个任意平台实例
-            return next(iter(platforms.keys()), None)
+                    return inst.meta().id
+            except Exception:
+                pass
 
-        # 拿不到平台列表，退化用配置值（兼容旧版本/测试环境）
-        return configured or "aiocqhttp"
+        # 再回退：取第一个任意实例
+        for inst in insts:
+            try:
+                return inst.meta().id
+            except Exception:
+                pass
+        return configured or None
 
     def _build_session(self) -> str | None:
         """根据配置（纯数字号码）构造统一会话标识 unified_msg_origin。"""
