@@ -68,8 +68,8 @@
   "schedule_platform": {
     "description": "推送使用的消息平台适配器名称（定时播报与告警共用）",
     "type": "string",
-    "hint": "一般填 aiocqhttp（QQ）。需与你已启用的适配器一致",
-    "default": "aiocqhttp"
+    "hint": "留空则自动查找已启用的 QQ(aiocqhttp) 平台。也可手动填平台实例 ID（如 WebUI 消息平台里显示的名称）",
+    "default": ""
   },
   "schedule_target_type": {
     "description": "推送目标类型（定时播报与告警共用）",

@@ -1,6 +1,6 @@
 name: astrbot_plugin_minimax_quota
 desc: 查询 MiniMax 套餐限额，触发指令 /mmquota，支持定时播报与阶梯告警
-version: 0.3.0
+version: 0.3.1
 author: v_klixie
 display_name: MiniMax 限额查询
 astrbot_version: ">=4.17.0"

@@ -186,13 +186,44 @@ class MinimaxQuotaPlugin(Star):
 
     # ---------------- 主动推送基础设施 ----------------
 
+    def _resolve_platform_id(self) -> str | None:
+        """解析推送用的平台实例 ID。
+
+        优先用用户在 WebUI 配置的 schedule_platform 值去匹配平台实例 ID；
+        若匹配不到，则自动查找第一个已启用的 aiocqhttp 类型平台。
+        """
+        configured = (self.config.get("schedule_platform") or "").strip()
+
+        # 尝试从 context.platform_manager 获取已注册的平台实例
+        pm = getattr(self.context, "platform_manager", None)
+        platforms = getattr(pm, "platforms", None)
+        if isinstance(platforms, dict) and platforms:
+            # 精确匹配 ID
+            if configured and configured in platforms:
+                return configured
+            # 模糊匹配：配置值是类型名（如 aiocqhttp），找该类型的第一个实例
+            for pid, inst in platforms.items():
+                ptype = type(inst).__name__
+                if configured and configured.lower() == ptype.lower():
+                    return pid
+            # 未配置或未匹配到，回退：取第一个 aiocqhttp 实例
+            for pid, inst in platforms.items():
+                ptype = type(inst).__name__
+                if "aiocqhttp" in ptype.lower():
+                    return pid
+            # 再回退：取第一个任意平台实例
+            return next(iter(platforms.keys()), None)
+
+        # 拿不到平台列表，退化用配置值（兼容旧版本/测试环境）
+        return configured or "aiocqhttp"
+
     def _build_session(self) -> str | None:
         """根据配置（纯数字号码）构造统一会话标识 unified_msg_origin。"""
-        platform = (self.config.get("schedule_platform") or "aiocqhttp").strip()
         target_type = (self.config.get("schedule_target_type") or "group").strip()
         target_id = (self.config.get("schedule_target_id") or "").strip()
         if not target_id:
             return None
+        platform = self._resolve_platform_id() or "aiocqhttp"
         msg_type = "GroupMessage" if target_type == "group" else "PrivateMessage"
         return f"{platform}:{msg_type}:{target_id}"
 
